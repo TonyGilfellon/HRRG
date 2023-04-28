@@ -1,6 +1,7 @@
 import sys, os, csv
 import numpy as np
 from matplotlib import pyplot as plt
+from decimal import Decimal
 import PhD_Master_Module as pmm
 
 save_addr = r'C:\Users\zup98752\OneDrive - Science and Technology Facilities Council\HRRG\CST_cathode_coordinate_simulation\analysis'
@@ -81,16 +82,25 @@ for f in ff_fnames:
 
 
 zcoords = [0., -100., -200., -250., -350., 100., 200., 250., 350.]
-ff_c, ff_m = pmm.best_fit(zcoords, HRRG_Field_Flatness)
-ff_x_fit = np.linspace(min(zcoords), max(zcoords), 1000)
-hrrg_A = 9e-6
-hrrg_B = 0.0151
-hrrg_C = 96.584
-ff_y_fit = [hrrg_A*x**2. * hrrg_B*x + hrrg_C for x in ff_x_fit]
-plt.plot(ff_x_fit, ff_y_fit, ls='-', lw=0.8, color='r', label='fit')
+ff_c_hrrg, ff_m_hrrg = pmm.best_fit(zcoords, HRRG_Field_Flatness)
+ff_x_fit_hrrg = np.linspace(min(zcoords), max(zcoords), 1000)
+
+
+y_poly_hrrg = np.polyfit(zcoords, HRRG_Field_Flatness, 2)
+print(f'{y_poly_hrrg = }')
+A_poly_hrrg = float(y_poly_hrrg[0])
+B_poly_hrrg = float(y_poly_hrrg[1])
+C_poly_hrrg = float(y_poly_hrrg[2])
+
+y_fit_poly_hrrg = np.poly1d(y_poly_hrrg)
+
+plt.plot(ff_x_fit_hrrg, y_fit_poly_hrrg(ff_x_fit_hrrg), ls='-', lw=0.8, color='r', label='fit')
 plt.scatter(zcoords, HRRG_Field_Flatness, marker='o', s=15, color='k', label='sim')
-plt.text(-300, 98, f'FF = 9e-6'r'$z^2$'f'x + 1.15e-2z + {96.584:1.3f}')
+plt.text(-300, 101, f'FFfit = {A_poly_hrrg:.2e}'r'$z^2$'f'x + {B_poly_hrrg:.2e}z + {C_poly_hrrg:.2e}')
+plt.text(-300, 100, f'SLF grad = {ff_m_hrrg:.4f}')
 plt.legend()
+plt.xlabel(f'z-coordinate ('r'$\mu$''m)')
+plt.ylabel(f'Field Flatness (%)')
 plt.savefig(f'{save_addr}\\HRRG_z_FF.png')
 plt.close('all')
 
@@ -125,16 +135,46 @@ for f in lrrg_ff_fnames:
     print(f'{FF = }')
     LRRG_Field_Flatness.append(FF)
 
-ff_c, ff_m = pmm.best_fit(lrrg_zcoords, LRRG_Field_Flatness)
-ff_x_fit = np.linspace(min(lrrg_zcoords), max(lrrg_zcoords), 1000)
-ff_y_fit = [ff_c + x*ff_m for x in ff_x_fit]
-plt.plot(ff_x_fit, ff_y_fit, ls='-', lw=0.8, color='r', label='fit')
+ff_c_lrrg, ff_m_lrrg = pmm.best_fit(lrrg_zcoords, LRRG_Field_Flatness)
+ff_x_fit_lrrg = np.linspace(min(lrrg_zcoords), max(lrrg_zcoords), 1000)
+
+
+
+y_poly_lrrg = np.polyfit(lrrg_zcoords, LRRG_Field_Flatness, 2)
+print(f'{y_poly_lrrg = }')
+A_poly_lrrg = float(y_poly_lrrg[0])
+B_poly_lrrg = float(y_poly_lrrg[1])
+C_poly_lrrg = float(y_poly_lrrg[2])
+
+y_fit_poly_lrrg = np.poly1d(y_poly_lrrg)
+
+plt.plot(ff_x_fit_lrrg, y_fit_poly_lrrg(ff_x_fit_lrrg), ls='-', lw=0.8, color='r', label='fit')
 plt.scatter(lrrg_zcoords, LRRG_Field_Flatness, marker='o', s=15, color='k', label='sim')
-plt.text(-175, 110, f'FF = {ff_m:1.3}z + {ff_c:1.3f}')
+plt.text(-195, 105, f'FFfit = {A_poly_lrrg:.2e}'r'$z^2$'f'x + {B_poly_lrrg:.2e}z + {C_poly_lrrg:.2e}')
+plt.text(-195, 101, f'SLF grad = {ff_m_lrrg:.4f}')
 plt.legend()
+plt.xlabel(f'z-coordinate ('r'$\mu$''m)')
+plt.ylabel(f'Field Flatness (%)')
 plt.savefig(f'{save_addr}\\LRRG_z_FF.png')
 plt.close('all')
 
 print(f'\nLRRG z vs FF\n')
 for idx, z in enumerate(lrrg_zcoords):
     print(f'{z}, {LRRG_Field_Flatness[idx]}')
+
+# combined HRRG LRRG plot
+
+plt.plot(ff_x_fit_hrrg, y_fit_poly_hrrg(ff_x_fit_hrrg), ls='-', lw=0.8, color='r', label='HRRG fit')
+plt.scatter(zcoords, HRRG_Field_Flatness, marker='o', s=15, color='darkorange', label='HRRG sim')
+# plt.text(-300, 101, f'FFfit = {A_poly_hrrg:.2e}'r'$z^2$'f'x + {B_poly_hrrg:.2e}z + {C_poly_hrrg:.2e}')
+# plt.text(-300, 100, f'SLF grad = {ff_m_hrrg:.4f}')
+plt.plot(ff_x_fit_lrrg, y_fit_poly_lrrg(ff_x_fit_lrrg), ls='-', lw=0.8, color='g', label='LRRG fit')
+plt.scatter(lrrg_zcoords, LRRG_Field_Flatness, marker='o', s=15, color='b', label='LRRG sim')
+# plt.text(-195, 105, f'FF = {A_poly_lrrg:.2e}'r'$z^2$'f'x + {B_poly_lrrg:.2e}z + {C_poly_lrrg:.2e}')
+plt.text(200, 111, f'LRRG')
+plt.text(200, 95, f'HRRG')
+plt.xlabel(f'z-coordinate ('r'$\mu$''m)')
+plt.ylabel(f'Field Flatness (%)')
+plt.legend()
+plt.savefig(f'{save_addr}\\HRRG_LRRG_z_FF.png')
+plt.close('all')
