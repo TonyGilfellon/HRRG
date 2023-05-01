@@ -118,7 +118,10 @@ def get_Q_0(Q_L, beta, print_plot=False):
 
 def get_zcoord_from_freq_delta(freq_delta):
     gradient = -1437. # Hz/um
-    z = freq_delta*(1./gradient) # um
+  
+    #intercept = -5.0000
+ 
+    z = freq_delta/gradient # um
 
     return z
 
@@ -188,10 +191,12 @@ for f in fnames:
         name = f'{f[:3]}_{f[20]}_removed'
         data_dict[name] = {}
         data_dict[name]['stop_present?'] = False
+        data_dict[name]['name'] = name
     else:
         name = f'{f[:3]}_{f[20]}'
         data_dict[name] = {}
         data_dict[name]['stop_present?'] = True
+        data_dict[name]['name'] = name
 
     data_dict[name]['fname'] = f
     name_keys.append(name)
@@ -232,6 +237,10 @@ for f in fnames:
 
 '''Plots'''
 
+circle_size = 15
+cross_size = 50
+plus_size = 80
+
 # s21
 for name in name_keys:
     s11= data_dict[name]['s11']
@@ -262,6 +271,10 @@ for name in name_keys:
     plt.close('all')
 
 # beta
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
 for name in name_keys:
     s11= data_dict[name]['s11']
     s21_smooth = data_dict[name]['s21_smooth']
@@ -282,15 +295,47 @@ for name in name_keys:
     beta = data_dict[name]['beta']
     z_coord = data_dict[name]['z_coord']
 
-    plt.scatter(z_coord, beta, marker='o', s=10, color='k')
-    # plt.plot(freq_list_s21_smooth, s21_smooth, ls='-', lw=1., color='darkorange')
-    # plt.scatter(res_freq, max_gamma_s21, marker='x', s=70, color='r', zorder=4)
-    # plt.hlines(max_gamma_s21-3., max_feq_minus3dB_s21, min_feq_minus3dB_s21, ls='--', lw=0.8, color='r')
-    # plt.text(3.002e9, -85., f'f = {res_freq_GHz:1.6f} GHz\n'r'$\beta$'f' = {beta:1.4f}\n'r'$Q_L$'f' = {Q_L:1.0f}\n'r'$Q_0$'f' = {Q_0:1.0f}\n')
+    # print(f'{str(data_dict[name]["name"]) = }')
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(z_coord, beta, marker='x', s=cross_size, color='b')
+            else:
+                plt.scatter(z_coord, beta, marker='x', s=cross_size, color='b', label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(z_coord, beta, marker='o', s=circle_size, color='b')
+            else:
+                plt.scatter(z_coord, beta, marker='o', s=circle_size, color='b', label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(z_coord, beta, marker='x', s=cross_size, color='r')
+            else:
+                plt.scatter(z_coord, beta, marker='x', s=cross_size, color='r', label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(z_coord, beta, marker='o', s=circle_size, color='r')
+            else:
+                plt.scatter(z_coord, beta, marker='o', s=circle_size, color='r', label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+
+plt.xlabel('Z-coordinate ['r'$\mu$''m]')
+plt.ylabel(r'$\beta$')
+plt.legend(loc='upper left')
 plt.savefig(f'{savepath}\\zcoord_beta.png')
 plt.close('all')
 
 # Q_0
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
 for name in name_keys:
     s11= data_dict[name]['s11']
     s21_smooth = data_dict[name]['s21_smooth']
@@ -311,15 +356,47 @@ for name in name_keys:
     beta = data_dict[name]['beta']
     z_coord = data_dict[name]['z_coord']
 
-    plt.scatter(z_coord, Q_0, marker='o', s=10, color='k')
-    # plt.plot(freq_list_s21_smooth, s21_smooth, ls='-', lw=1., color='darkorange')
-    # plt.scatter(res_freq, max_gamma_s21, marker='x', s=70, color='r', zorder=4)
-    # plt.hlines(max_gamma_s21-3., max_feq_minus3dB_s21, min_feq_minus3dB_s21, ls='--', lw=0.8, color='r')
-    # plt.text(3.002e9, -85., f'f = {res_freq_GHz:1.6f} GHz\n'r'$\beta$'f' = {beta:1.4f}\n'r'$Q_L$'f' = {Q_L:1.0f}\n'r'$Q_0$'f' = {Q_0:1.0f}\n')
+    # print(f'{str(data_dict[name]["name"]) = }')
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(z_coord, Q_0, marker='x', s=cross_size, color='b')
+            else:
+                plt.scatter(z_coord, Q_0, marker='x', s=cross_size, color='b', label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(z_coord, Q_0, marker='o', s=circle_size, color='b')
+            else:
+                plt.scatter(z_coord, Q_0, marker='o', s=circle_size, color='b', label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(z_coord, Q_0, marker='x', s=cross_size, color='r')
+            else:
+                plt.scatter(z_coord, Q_0, marker='x', s=cross_size, color='r', label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(z_coord, Q_0, marker='o', s=circle_size, color='r')
+            else:
+                plt.scatter(z_coord, Q_0, marker='o', s=circle_size, color='r', label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+plt.xlabel('Z-coordinate ['r'$\mu$''m]')
+plt.ylabel(r'$Q_0$')
+plt.legend(loc='lower center')
 plt.savefig(f'{savepath}\\zcoord_Q_0.png')
 plt.close('all')
 
 # Q_L
+
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
 for name in name_keys:
     s11= data_dict[name]['s11']
     s21_smooth = data_dict[name]['s21_smooth']
@@ -340,15 +417,46 @@ for name in name_keys:
     beta = data_dict[name]['beta']
     z_coord = data_dict[name]['z_coord']
 
-    plt.scatter(z_coord, Q_L, marker='o', s=10, color='k')
-    # plt.plot(freq_list_s21_smooth, s21_smooth, ls='-', lw=1., color='darkorange')
-    # plt.scatter(res_freq, max_gamma_s21, marker='x', s=70, color='r', zorder=4)
-    # plt.hlines(max_gamma_s21-3., max_feq_minus3dB_s21, min_feq_minus3dB_s21, ls='--', lw=0.8, color='r')
-    # plt.text(3.002e9, -85., f'f = {res_freq_GHz:1.6f} GHz\n'r'$\beta$'f' = {beta:1.4f}\n'r'$Q_L$'f' = {Q_L:1.0f}\n'r'$Q_0$'f' = {Q_0:1.0f}\n')
+    # print(f'{str(data_dict[name]["name"]) = }')
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(z_coord, Q_L, marker='x', s=cross_size, color='b')
+            else:
+                plt.scatter(z_coord, Q_L, marker='x', s=cross_size, color='b', label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(z_coord, Q_L, marker='o', s=circle_size, color='b')
+            else:
+                plt.scatter(z_coord, Q_L, marker='o', s=circle_size, color='b', label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(z_coord, Q_L, marker='x', s=cross_size, color='r')
+            else:
+                plt.scatter(z_coord, Q_L, marker='x', s=cross_size, color='r', label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(z_coord, Q_L, marker='o', s=circle_size, color='r')
+            else:
+                plt.scatter(z_coord, Q_L, marker='o', s=circle_size, color='r', label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+plt.xlabel('Z-coordinate ['r'$\mu$''m]')
+plt.ylabel(r'$Q_L$')
+plt.legend(loc='lower center')
 plt.savefig(f'{savepath}\\zcoord_Q_L.png')
 plt.close('all')
 
 # max_gamma_s21
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
 for name in name_keys:
     s11= data_dict[name]['s11']
     s21_smooth = data_dict[name]['s21_smooth']
@@ -369,16 +477,46 @@ for name in name_keys:
     beta = data_dict[name]['beta']
     z_coord = data_dict[name]['z_coord']
 
-    plt.scatter(z_coord, max_gamma_s21, marker='o', s=10, color='k')
-    # plt.scatter(z_coord, max_gamma_raw_s21, marker='o', s=10, color='r')
-    # plt.plot(freq_list_s21_smooth, s21_smooth, ls='-', lw=1., color='darkorange')
-    # plt.scatter(res_freq, max_gamma_s21, marker='x', s=70, color='r', zorder=4)
-    # plt.hlines(max_gamma_s21-3., max_feq_minus3dB_s21, min_feq_minus3dB_s21, ls='--', lw=0.8, color='r')
-    # plt.text(3.002e9, -85., f'f = {res_freq_GHz:1.6f} GHz\n'r'$\beta$'f' = {beta:1.4f}\n'r'$Q_L$'f' = {Q_L:1.0f}\n'r'$Q_0$'f' = {Q_0:1.0f}\n')
+    # print(f'{str(data_dict[name]["name"]) = }')
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(z_coord, max_gamma_s21, marker='x', s=cross_size, color='b')
+            else:
+                plt.scatter(z_coord, max_gamma_s21, marker='x', s=cross_size, color='b', label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(z_coord, max_gamma_s21, marker='o', s=circle_size, color='b')
+            else:
+                plt.scatter(z_coord, max_gamma_s21, marker='o', s=circle_size, color='b', label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(z_coord, max_gamma_s21, marker='x', s=cross_size, color='r')
+            else:
+                plt.scatter(z_coord, max_gamma_s21, marker='x', s=cross_size, color='r', label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(z_coord, max_gamma_s21, marker='o', s=circle_size, color='r')
+            else:
+                plt.scatter(z_coord, max_gamma_s21, marker='o', s=circle_size, color='r', label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+plt.xlabel('Z-coordinate ['r'$\mu$''m]')
+plt.ylabel(r'$\Gamma_{MAX}$''[dB]')
+plt.legend(loc='upper left')
 plt.savefig(f'{savepath}\\zcoord_max_gamma_s21.png')
 plt.close('all')
 
 # max_gamma_raw_s21
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
 for name in name_keys:
     s11= data_dict[name]['s11']
     s21_smooth = data_dict[name]['s21_smooth']
@@ -399,11 +537,137 @@ for name in name_keys:
     beta = data_dict[name]['beta']
     z_coord = data_dict[name]['z_coord']
 
-    # plt.scatter(z_coord, max_gamma_s21, marker='o', s=10, color='k')
-    plt.scatter(z_coord, max_gamma_raw_s21, marker='o', s=10, color='r')
-    # plt.plot(freq_list_s21_smooth, s21_smooth, ls='-', lw=1., color='darkorange')
-    # plt.scatter(res_freq, max_gamma_s21, marker='x', s=70, color='r', zorder=4)
-    # plt.hlines(max_gamma_s21-3., max_feq_minus3dB_s21, min_feq_minus3dB_s21, ls='--', lw=0.8, color='r')
-    # plt.text(3.002e9, -85., f'f = {res_freq_GHz:1.6f} GHz\n'r'$\beta$'f' = {beta:1.4f}\n'r'$Q_L$'f' = {Q_L:1.0f}\n'r'$Q_0$'f' = {Q_0:1.0f}\n')
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='x', s=cross_size, color='b')
+            else:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='x', s=cross_size, color='b', label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='o', s=circle_size, color='b')
+            else:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='o', s=circle_size, color='b', label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='x', s=cross_size, color='r')
+            else:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='x', s=cross_size, color='r', label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='o', s=circle_size, color='r')
+            else:
+                plt.scatter(z_coord, max_gamma_raw_s21, marker='o', s=circle_size, color='r', label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+plt.xlabel('Z-coordinate ['r'$\mu$''m]')
+plt.ylabel('raw ''$\Gamma_{MAX}$''[dB]')
+plt.legend(loc='upper left')
 plt.savefig(f'{savepath}\\zcoord_max_gamma_raw_s21.png')
 plt.close('all')
+
+
+# insertion frequencies#
+for name in name_keys:
+    print(name)
+    print(type(name))
+    print(data_dict[name]['stop_present?'])
+C20_guard_removed_freqs = [data_dict[str(n)]['res_freq'] for n in name_keys if 'C20' in str(data_dict[n]['name']) and str(data_dict[n]['stop_present?']) == 'False']
+C20_guard_present_freqs = [data_dict[str(n)]['res_freq'] for n in name_keys if 'C20' in str(data_dict[n]['name']) and str(data_dict[n]['stop_present?']) == 'True']
+C16_guard_removed_freqs = [data_dict[str(n)]['res_freq'] for n in name_keys if 'C16' in str(data_dict[n]['name']) and str(data_dict[n]['stop_present?']) == 'False']
+C16_guard_present_freqs = [data_dict[str(n)]['res_freq'] for n in name_keys if 'C16' in str(data_dict[n]['name']) and str(data_dict[n]['stop_present?']) == 'True']
+C20_guard_removed_freqs = [(design_freq_Hz - i)/1e3 for i in C20_guard_removed_freqs]
+C20_guard_present_freqs = [(design_freq_Hz - i)/1e3 for i in C20_guard_present_freqs]
+C16_guard_removed_freqs = [(design_freq_Hz - i)/1e3 for i in C16_guard_removed_freqs]
+C16_guard_present_freqs = [(design_freq_Hz - i)/1e3 for i in C16_guard_present_freqs]
+
+
+plt.scatter([1]*len(C16_guard_present_freqs), C16_guard_present_freqs, marker='x', s=cross_size, color='b', label='C16 guard present')
+plt.scatter([2]*len(C16_guard_removed_freqs), C16_guard_removed_freqs, marker='o', s=cross_size, color='b', label='C16 guard removed')
+plt.scatter([3]*len(C20_guard_present_freqs), C20_guard_present_freqs, marker='x', s=cross_size, color='r', label='C20 guard present')
+plt.scatter([4]*len(C20_guard_removed_freqs), C20_guard_removed_freqs, marker='o', s=cross_size, color='r', label='C20 guard removed')
+
+plt.ylabel(r'$\Delta$''f [kHz]')
+plt.ylim(-200, 175)
+plt.legend(loc='lower left')
+plt.savefig(f'{savepath}\\Insertion_frequencies.png')
+plt.close('all')
+
+
+# z-coord vs freq
+
+sim_z_coords = np.linspace(-200, 200, endpoint=True)
+gradient = -1.4375
+intercept = -5.
+sim_freqs = [z * gradient for z in sim_z_coords]
+
+
+
+plt.plot(sim_z_coords, sim_freqs, ls='--', lw=0.8, color='k', label='CST Sim')
+
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
+for name in name_keys:
+    s11= data_dict[name]['s11']
+    s21_smooth = data_dict[name]['s21_smooth']
+    freq_list_s21_smooth = data_dict[name]['freq_list_s21_smooth']
+    freq_list = data_dict[name]['freq_list']
+    freq_list_GHz = [i/1e9 for i in freq_list]
+    s21 = data_dict[name]['s21']
+    res_freq = data_dict[name]['res_freq']
+    res_freq_GHz = res_freq/1e9
+    res_freq_s21 = data_dict[name]['res_freq_s21']
+    max_gamma_s21 = data_dict[name]['max_gamma_s21']
+    max_gamma_raw_s21 = data_dict[name]['max_gamma_raw_s21']
+    min_feq_minus3dB_s21 = data_dict[name]['min_feq_minus3dB_s21']
+    max_feq_minus3dB_s21 = data_dict[name]['max_feq_minus3dB_s21']
+    bandwidth = data_dict[name]['bandwidth']
+    Q_0 = data_dict[name]['Q_0']
+    Q_L = data_dict[name]['Q_L']
+    beta = data_dict[name]['beta']
+    z_coord = data_dict[name]['z_coord']
+
+    res_freq = (res_freq - design_freq_Hz) / 1e3 # um kHz
+
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(z_coord, res_freq, marker='+', s=plus_size, color='b')
+            else:
+                plt.scatter(z_coord, res_freq, marker='+', s=plus_size, color='b', label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(z_coord, res_freq, marker='o', s=circle_size, color='b')
+            else:
+                plt.scatter(z_coord, res_freq, marker='o', s=circle_size, color='b', label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(z_coord, res_freq, marker='+', s=plus_size, color='r')
+            else:
+                plt.scatter(z_coord, res_freq, marker='+', s=plus_size, color='r', label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(z_coord, res_freq, marker='o', s=circle_size, color='r')
+            else:
+                plt.scatter(z_coord, res_freq, marker='o', s=circle_size, color='r', label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+plt.xlabel('Z-coordinate ['r'$\mu$''m]')
+plt.ylabel(r'$\Delta$''f [kHz]')
+plt.legend(loc='upper right')
+plt.savefig(f'{savepath}\\zcoord_freqs_sim_line.png')
+plt.close('all')
+
+

@@ -95,6 +95,7 @@ x_fit = np.linspace(min(z_coords), max(z_coords), 1000)
 c_plot, m_plot = pmm.best_fit(z_coords, plot_freqs_kHz)
 print(f'gradient = {m_Hz_mm:1.0f} Hz/mm')
 print(f'gradient = {m_Hz_um:1.0f} Hz/um')
+print(f'c_plot = {c_plot:1.4f} Hz')
 y_fit = [c_plot+m_plot*x for x in x_fit]
 
 temp_vector = [i*(1./-50.) for i in plot_freqs_kHz]
