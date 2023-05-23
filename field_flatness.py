@@ -80,7 +80,7 @@ for f in ff_fnames:
     print(f'{FF = }')
     HRRG_Field_Flatness.append(FF)
 
-
+print(f'{HRRG_Field_Flatness = }')
 zcoords = [0., -100., -200., -250., -350., 100., 200., 250., 350.]
 ff_c_hrrg, ff_m_hrrg = pmm.best_fit(zcoords, HRRG_Field_Flatness)
 ff_x_fit_hrrg = np.linspace(min(zcoords), max(zcoords), 1000)
@@ -91,6 +91,10 @@ print(f'{y_poly_hrrg = }')
 A_poly_hrrg = float(y_poly_hrrg[0])
 B_poly_hrrg = float(y_poly_hrrg[1])
 C_poly_hrrg = float(y_poly_hrrg[2])
+
+print(f'{A_poly_hrrg = }')
+print(f'{B_poly_hrrg = }')
+print(f'{C_poly_hrrg = }')
 
 y_fit_poly_hrrg = np.poly1d(y_poly_hrrg)
 

@@ -7,34 +7,34 @@ import matplotlib.pyplot as plt
 
 import PhD_Master_Module as pmm
 
-# r_0 = (2.4048*2.998e8)/(2.*np.pi*2.9985e9)
-# print(f'{r_0 = }')
-
-'''
-C1Radius -> 4.0765,
-BlendRadius -> 0.4,
-IrisRadius -> 2.6 - 1.2,
-MajorRadius -> 1.2,
-MinorRadius -> 0.8,
-C2Radius -> 4.0865
-'''
-
-radius = [42.0,
-          42.5,
-          43.0,
-          43.5,
-          44.0]
-
-freq_GHz = [3.1270790206506,
-            3.0853956613406,
-            3.0446676125191,
-            3.0048592213129,
-            2.9659554987067]
-
-c, m = pmm.best_fit(radius, freq_GHz)
-r_pi = (2.9985-c)/m
-print(f'{r_pi = }')
-# exit()
+# # r_0 = (2.4048*2.998e8)/(2.*np.pi*2.9985e9)
+# # print(f'{r_0 = }')
+#
+# '''
+# C1Radius -> 4.0765,
+# BlendRadius -> 0.4,
+# IrisRadius -> 2.6 - 1.2,
+# MajorRadius -> 1.2,
+# MinorRadius -> 0.8,
+# C2Radius -> 4.0865
+# '''
+#
+# radius = [42.0,
+#           42.5,
+#           43.0,
+#           43.5,
+#           44.0]
+#
+# freq_GHz = [3.1270790206506,
+#             3.0853956613406,
+#             3.0446676125191,
+#             3.0048592213129,
+#             2.9659554987067]
+#
+# c, m = pmm.best_fit(radius, freq_GHz)
+# r_pi = (2.9985-c)/m
+# print(f'{r_pi = }')
+# # exit()
 
 save_addr = r'C:\Users\zup98752\OneDrive - Science and Technology Facilities Council\HRRG\CST_cathode_coordinate_simulation\analysis'
 data_addr = r'C:\Users\zup98752\OneDrive - Science and Technology Facilities Council\HRRG\CST_cathode_coordinate_simulation\data'
@@ -67,6 +67,7 @@ m_Hz_mm = m_Hz_um*1e3
 m_kHz_mm = m_Hz_um/1e3
 m_kHz_um = m_Hz_um/1e3
 m_um_kHz = 1./m_kHz_um
+
 
 
 
@@ -110,7 +111,7 @@ C20_zcoord_um = m_z_temp * C20_temp_delta
 C20_freq_kHz_delta = -50.*C20_temp_delta
 C20_freq_GHz = (C20_freq_kHz_delta/1e3)+design_freq_GHz
 print(f'{design_freq_GHz = }')
-print(f'{C20_freq_GHz = }')
+print(f'{C20_freq_kHz_delta = }')
 print(f'{C20_zcoord_um = }')
 
 C16_temp = 49.1
@@ -119,7 +120,7 @@ C16_zcoord_um = m_z_temp * C16_temp_delta
 C16_freq_kHz_delta = -50.*C16_temp_delta
 C16_freq_GHz = (C16_freq_kHz_delta/1e6)+design_freq_GHz
 print(f'{design_freq_GHz = }')
-print(f'{C16_freq_GHz = }')
+print(f'{C16_freq_kHz_delta = }')
 print(f'{C16_zcoord_um = }')
 
 plt.scatter(z_coords, plot_freqs_kHz, marker='o', s=15, color='k', label='sims')
