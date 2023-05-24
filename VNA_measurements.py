@@ -1,6 +1,6 @@
 import numpy as np
 import argparse
-import sys, os, csv
+import sys, os, csv, pickle
 from matplotlib import pyplot as plt
 import pandas as pd
 from snps import SNPs
@@ -14,11 +14,13 @@ import skrf as rf
 #   2. delta intesect, c = abs(C20_c - C16_c)
 #   3. for C20: 2.37 (C16 probe power at a cavity for pow of 4.45) - delta_c = answer needed
 
-
+# read in raw data or load pickle?
+read_data = False
 # exit()
 
 savepath = r'C:\Users\zup98752\OneDrive - Science and Technology Facilities Council\HRRG\HRRG_measurements_20230418\analysis'
 snp_addr = r'C:\Users\zup98752\OneDrive - Science and Technology Facilities Council\HRRG\HRRG_measurements_20230418\data'
+pkl_addr = r'C:\Users\zup98752\OneDrive - Science and Technology Facilities Council\HRRG\HRRG_measurements_20230418'
 fnames = os.listdir(snp_addr)
 fname = fnames[0]
 fname_and_addr = f'{snp_addr}\\{fname}'
@@ -322,20 +324,27 @@ def get_delta_Db_ratio(power_ratio):
     return abs(10.*np.log10(power_ratio))
 
 def get_delta_Db_from_MCR_data():
-    C20_CFP = [4.43, 4.7]
-    C20_PP = [1.97, 2.08]
-    C16_CFP = [4.45, 4.75]
-    C16_PP = [2.37, 2.5]
+    # C20_CFP = [4.43, 4.7]
+    # C20_PP = [1.97, 2.08]
+    # C16_CFP = [4.45, 4.75]
+    # C16_PP = [2.37, 2.5]
+
+    C20_CFP = [1.648, 2.329]
+    C20_PP = [3.144, 4.481]
+    C16_CFP = [1.676, 2.302]
+    C16_PP = [3.021, 4.206]
 
     C20_c, C20_m = pmm.best_fit(C20_CFP, C20_PP)
     C16_c, C16_m = pmm.best_fit(C16_CFP, C16_PP)
     
-    xs = np.linspace(4.4, 4.8, 1000, endpoint=True)
+    xs = np.linspace(0.3, 2.4, 1000, endpoint=True)
     C20_fit = [x*C20_m + C20_c for x in xs]
     C16_fit = [x*C16_m + C16_c for x in xs]
 
     plt.plot(xs, C20_fit, ls='-', lw=0.8, color='g', label='C20')
     plt.plot(xs, C16_fit, ls='-', lw=0.8, color='b', label='C16')
+    plt.scatter(C20_CFP, C20_PP, marker='x', s=40, c='k')
+    plt.scatter(C16_CFP, C16_PP, marker='x', s=40, c='k')
     plt.xlabel('Cavity Forward Power [MW]')
     plt.ylabel('Cavity Probe Power [MW]')
     plt.ylabel('Cavity Probe Power [MW]')
@@ -376,96 +385,141 @@ def get_delta_Db_from_MCR_data():
 # input(f'{Db_test = }')
 #####################
 
-
 delta_Db = get_delta_Db_from_MCR_data()
 
+print(f'{delta_Db = }')
 
+if read_data:
+    data_dict = {}
+    name_keys = []
+    C16_no_stop_freqs = []
+    C16_stop_freqs = []
+    C20_no_stop_freqs = []
+    C20_stop_freqs = []
+    Q_0_list = []
+    beta_list = []
+    for f in fnames:
 
-data_dict = {}
-name_keys = []
-C16_no_stop_freqs = []
-C16_stop_freqs = []
-C20_no_stop_freqs = []
-C20_stop_freqs = []
-Q_0_list = []
-beta_list = []
-for f in fnames:
+        if 'remove' in f:
+            print(f'{len(f) = }')
+            name = f'{f[:3]}_{f[20]}_removed'
+            data_dict[name] = {}
+            data_dict[name]['stop_present?'] = False
+            data_dict[name]['name'] = name
 
-    if 'remove' in f:
-        name = f'{f[:3]}_{f[20]}_removed'
-        data_dict[name] = {}
-        data_dict[name]['stop_present?'] = False
-        data_dict[name]['name'] = name
-
-    else:
-        name = f'{f[:3]}_{f[20]}'
-        data_dict[name] = {}
-        data_dict[name]['stop_present?'] = True
-        data_dict[name]['name'] = name
-
-    data_dict[name]['fname'] = f
-    name_keys.append(name)
-
-    freq, s11, s11_ph, s21, s21_ph, s12, s12_ph, s22, s22_ph = read_s2p(f'{snp_addr}\\{data_dict[name]["fname"]}')
-    data_dict[name]['freq_list'] = freq
-    data_dict[name]['s11'] = s11
-    data_dict[name]['s21'] = s21
-    res_freq, min_gamma_s11 = get_response_freq(freq, s11)
-    data_dict[name]['res_freq'] = res_freq
-
-    if '16' in name:
-        if data_dict[name]['stop_present?']:
-            C16_stop_freqs.append(res_freq)
         else:
-            C16_no_stop_freqs.append(res_freq)
-    elif '20' in name:
-        if data_dict[name]['stop_present?']:
-            C20_stop_freqs.append(res_freq)
-        else:
-            C20_no_stop_freqs.append(res_freq)
+            print(f'{len(f) = }')
+            name = f'{f[:3]}_{f[20]}'
+            data_dict[name] = {}
+            data_dict[name]['stop_present?'] = True
+            data_dict[name]['name'] = name
 
-    data_dict[name]['min_gamma_s11'] = min_gamma_s11
-    Q_L, s21_smooth, freq_list_s21_smooth, freq_list, res_freq_s21, max_gamma_s21, max_gamma_raw_s21, min_feq_minus3dB_s21, max_feq_minus3dB_s21, bandwidth, half_delta_f_delta_Db, res_freq_idx_smooth, std_noise_zoom = get_s21_data(freq, s21, delta_Db, name, print_plot=True)
-    data_dict[name]['Q_L'] = Q_L
-    data_dict[name]['s21_smooth'] = s21_smooth
-    data_dict[name]['freq_list_s21_smooth'] = freq_list_s21_smooth
-    data_dict[name]['res_freq_s21'] = res_freq_s21
-    data_dict[name]['res_freq_idx_smooth'] = res_freq_idx_smooth
-    data_dict[name]['max_gamma_s21'] = max_gamma_s21
-    data_dict[name]['max_gamma_raw_s21'] = max_gamma_raw_s21
-    data_dict[name]['min_feq_minus3dB_s21'] = min_feq_minus3dB_s21
-    data_dict[name]['max_feq_minus3dB_s21'] = max_feq_minus3dB_s21
-    data_dict[name]['bandwidth'] = bandwidth
-    data_dict[name]['delta_f_tune'] = half_delta_f_delta_Db
-    temp_freq_gradient = -50000. # -50kHz per deg C
-    delta_temp = 1./temp_freq_gradient * half_delta_f_delta_Db
-    data_dict[name]['delta_temp_tune'] = delta_temp
-    print(f'{half_delta_f_delta_Db = }')
-    print(f'{delta_temp = }')
-    data_dict[name]['std_noise_zoom'] = std_noise_zoom
+        data_dict[name]['fname'] = f
+        name_keys.append(name)
 
-    response_at_res_freq_s21 = get_s21_at_res_freq(freq, s21, design_freq_Hz)
-    data_dict[name]['response_at_res_freq_s21'] = response_at_res_freq_s21
-    data_dict[name]['overcoupled'] = is_overcoupled(s11, s11_ph, name, print_plot=False)
-    beta = get_beta(s11, overcoupled=True)
-    data_dict[name]['beta'] = beta
-    Q_0 = get_Q_0(Q_L, beta)
-    data_dict[name]['Q_0'] = Q_0
-    design_freq_Hz = design_res_freq_MHz*1e6
-    delta_freq = res_freq-design_freq_Hz
-    z_coord = get_zcoord_from_freq_delta(delta_freq)
-    data_dict[name]['z_coord'] = z_coord
+        freq, s11, s11_ph, s21, s21_ph, s12, s12_ph, s22, s22_ph = read_s2p(f'{snp_addr}\\{data_dict[name]["fname"]}')
+        data_dict[name]['freq_list'] = freq
+        data_dict[name]['s11'] = s11
+        data_dict[name]['s21'] = s21
+        res_freq, min_gamma_s11 = get_response_freq(freq, s11)
+        data_dict[name]['res_freq'] = res_freq
 
-    Q_0_list.append(Q_0)
+        if '16' in name:
+            if data_dict[name]['stop_present?']:
+                C16_stop_freqs.append(res_freq)
+            else:
+                C16_no_stop_freqs.append(res_freq)
+        elif '20' in name:
+            if data_dict[name]['stop_present?']:
+                C20_stop_freqs.append(res_freq)
+            else:
+                C20_no_stop_freqs.append(res_freq)
 
-    beta_list.append(beta)
+        data_dict[name]['min_gamma_s11'] = min_gamma_s11
+        Q_L, s21_smooth, freq_list_s21_smooth, freq_list, res_freq_s21, max_gamma_s21, max_gamma_raw_s21, min_feq_minus3dB_s21, max_feq_minus3dB_s21, bandwidth, half_delta_f_delta_Db, res_freq_idx_smooth, std_noise_zoom = get_s21_data(freq, s21, delta_Db, name, print_plot=True)
+        data_dict[name]['Q_L'] = Q_L
+        data_dict[name]['s21_smooth'] = s21_smooth
+        data_dict[name]['freq_list_s21_smooth'] = freq_list_s21_smooth
+        data_dict[name]['res_freq_s21'] = res_freq_s21
+        data_dict[name]['res_freq_idx_smooth'] = res_freq_idx_smooth
+        data_dict[name]['max_gamma_s21'] = max_gamma_s21
+        data_dict[name]['max_gamma_raw_s21'] = max_gamma_raw_s21
+        data_dict[name]['min_feq_minus3dB_s21'] = min_feq_minus3dB_s21
+        data_dict[name]['max_feq_minus3dB_s21'] = max_feq_minus3dB_s21
+        data_dict[name]['bandwidth'] = bandwidth
+        data_dict[name]['delta_f_tune'] = half_delta_f_delta_Db
+        temp_freq_gradient = -50000. # -50kHz per deg C
+        delta_temp = 1./temp_freq_gradient * half_delta_f_delta_Db
+        data_dict[name]['delta_temp_tune'] = delta_temp
+        print(f'{half_delta_f_delta_Db = }')
+        print(f'{delta_temp = }')
+        data_dict[name]['std_noise_zoom'] = std_noise_zoom
 
-    print(f'\n{name = }')
-    print(f'{res_freq = }')
-    print(f'{Q_L = }')
-    print(f'{Q_0 = }')
-    print(f'{beta = }')
+        response_at_res_freq_s21 = get_s21_at_res_freq(freq, s21, design_freq_Hz)
+        data_dict[name]['response_at_res_freq_s21'] = response_at_res_freq_s21
+        data_dict[name]['overcoupled'] = is_overcoupled(s11, s11_ph, name, print_plot=False)
+        beta = get_beta(s11, overcoupled=True)
+        data_dict[name]['beta'] = beta
+        Q_0 = get_Q_0(Q_L, beta)
+        data_dict[name]['Q_0'] = Q_0
+        design_freq_Hz = design_res_freq_MHz*1e6
+        delta_freq = res_freq-design_freq_Hz
+        z_coord = get_zcoord_from_freq_delta(delta_freq)
+        data_dict[name]['z_coord'] = z_coord
 
+        Q_0_list.append(Q_0)
+
+        beta_list.append(beta)
+
+        print(f'\n{name = }')
+        print(f'{res_freq = }')
+        print(f'{Q_L = }')
+        print(f'{Q_0 = }')
+        print(f'{beta = }')
+
+    # pickle dump data for ease of reading in again
+
+    # with open(f'{snp_addr}', 'wb') as f:
+    #     pickle.dump(data_dict, f, pickle.HIGHEST_PROTOCOL)
+
+    with open(f'{pkl_addr}\\data_dict.pkl', 'wb') as handle:
+        pickle.dump(data_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    print(f'{name_keys = }')
+    print(f'{C16_no_stop_freqs = }')
+    print(f'{C16_stop_freqs = }')
+    print(f'{C20_no_stop_freqs = }')
+    print(f'{C20_stop_freqs = }')
+    print(f'{Q_0_list = }')
+    print(f'{beta_list = }')
+
+
+
+
+
+else:
+
+    # read in data
+
+    # with open(f'{savepath}\\', 'rb') as f:
+    #     data_dict =  pickle.load(f)
+
+    with open(f'{pkl_addr}\\data_dict.pkl', 'rb') as handle:
+        data_dict = pickle.load(handle)
+
+    name_keys = ['C16_1', 'C16_2', 'C16_3', 'C16_1_removed', 'C16_2_removed', 'C20_1', 'C20_1_removed', 'C20_2',
+                 'C20_2_removed', 'C20_3', 'C20_3_removed', 'C20_4_removed', 'C20_5_removed', 'C20_6_removed']
+    C16_no_stop_freqs = [2999896249.0623, 2999958764.6912]
+    C16_stop_freqs = [2999983770.9427, 2999951262.8157, 3000058789.6974]
+    C20_no_stop_freqs = [3000081295.3238, 2999833733.4334, 2999861240.3101, 2999848737.1843, 2999928757.1893,
+                         2999833733.4334]
+    C20_stop_freqs = [3000128807.2018, 2999866241.5604, 2999881245.3113]
+    Q_0_list = [12547.97994807139, 12617.657297656851, 12537.330040632458, 12550.004752512048, 12546.808700265308,
+                12583.56071336736, 12458.871458176514, 12545.365317140619, 12419.932268171007, 12478.660109259128,
+                12481.326229441232, 12484.358002160503, 12540.965629097118, 12485.258396662344]
+    beta_list = [1.0186490215817914, 1.0193628061135411, 1.016888651120073, 1.0190336643521531, 1.0184757397847044,
+                 1.0137900760029726, 1.0146366560141389, 1.018310829336793, 1.018857251884908, 1.0179677372548406,
+                 1.0184123448471052, 1.0189127242335867, 1.0175609581821787, 1.019068430258647]
 
 
 '''Plots'''
@@ -476,6 +530,22 @@ plus_size = 80
 square_size = 20
 C16_colour = 'b'
 C20_colour = 'r'
+
+# hitogram of peak max smoothed s21
+
+all_max_s21 = []
+for name in name_keys:
+    max_gamma_s21 = data_dict[name]['max_gamma_s21']
+    all_max_s21.append(max_gamma_s21)
+mean_peak_s21 = np.mean(all_max_s21)
+std_peak_s21 = np.std(all_max_s21)
+n, bedges, patches = plt.hist(all_max_s21, bins=9, histtype='step', lw=0.8, color='k')
+plt.vlines(mean_peak_s21, 0., max(n), ls='--', lw=0.8, color='r')
+plt.text(-69.68, 3.5, r'$\mu$'f' = {mean_peak_s21:1.4f}\n'r'$\sigma$'f' = {std_peak_s21:1.4f}')
+plt.ylabel('N')
+plt.xlabel('Peak S21 [Db]')
+plt.savefig(f'{savepath}\\all_max_s21.png')
+plt.close('all')
 
 # s21_zoom_overplot
 legend_done_16_guard_present = False
