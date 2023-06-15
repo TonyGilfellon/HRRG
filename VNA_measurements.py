@@ -276,7 +276,7 @@ def read_s2p(fname_and_addr):
     plt.savefig(f'{savepath}\\{name}_scikit_rf_complex.png')
     plt.close('all')
 
-    snp_freq = snp.frequency.f[np.argmin(snp.s_mag[:, 0, 0])]
+    snp_freq =  get_snp_freq(snp)
     print(f'{snp_freq = }')
 
     freq = []
