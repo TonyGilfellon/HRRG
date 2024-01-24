@@ -4,8 +4,26 @@ import sys, os, csv, pickle
 from matplotlib import pyplot as plt
 import pandas as pd
 from snps import SNPs
+pmm_addr = r'C:\Users\zup98752\PycharmProjects\PhD'
+sys.path.insert(1,pmm_addr)
 import PhD_Master_Module as pmm
 import skrf as rf
+
+# ruedi roughwork
+# q0_ruedi = 13199.
+# q0_hrrg = 11463.
+# f= 2.9985e9
+# w = f*2.*np.pi
+# beta_ruedi = 2.
+# beta_hrrg = 1.034
+# q_ext_ruedi = q0_ruedi/beta_ruedi
+# P_ext_ruedi = w/q_ext_ruedi
+# print(f'{P_ext_ruedi = }')
+# q_ext_hrrg = q0_hrrg/beta_hrrg
+# P_ext_hrrg = w/q_ext_hrrg
+# print(f'{P_ext_hrrg = }')
+
+
 
 # correlate conditioning data with experimental
 
