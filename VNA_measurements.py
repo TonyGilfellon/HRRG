@@ -43,7 +43,8 @@ fnames = os.listdir(snp_addr)
 fname = fnames[0]
 fname_and_addr = f'{snp_addr}\\{fname}'
 print(f'{fnames = }')
-
+C16_APR23_colour = "b"
+C20_APR23_colour = "g"
 
 
 C16_with_stop_fnames = ['C16_20.7degc_insert_1.s2p', 'C16_20.7degc_insert_2.s2p', 'C16_20.7degc_insert_3.s2p']
@@ -1041,6 +1042,67 @@ plt.legend(loc=8)
 plt.savefig(f'{savepath}\\zcoord_max_gamma_raw_s21.png')
 plt.close('all')
 
+# freq vs max_gamma_s21
+legend_done_16_guard_present = False
+legend_done_16_guard_removed = False
+legend_done_20_guard_present = False
+legend_done_20_guard_removed = False
+for name in name_keys:
+    s11= data_dict[name]['s11']
+    s21_smooth = data_dict[name]['s21_smooth']
+    freq_list_s21_smooth = data_dict[name]['freq_list_s21_smooth']
+    freq_list = data_dict[name]['freq_list']
+    freq_list_GHz = [i/1e9 for i in freq_list]
+    s21 = data_dict[name]['s21']
+    res_freq = data_dict[name]['res_freq']
+    res_freq_GHz = res_freq/1e9
+    res_freq_s21 = data_dict[name]['res_freq_s21']
+    max_gamma_s21 = data_dict[name]['max_gamma_s21']
+    max_gamma_raw_s21 = data_dict[name]['max_gamma_raw_s21']
+    min_feq_minus3dB_s21 = data_dict[name]['min_feq_minus3dB_s21']
+    max_feq_minus3dB_s21 = data_dict[name]['max_feq_minus3dB_s21']
+    bandwidth = data_dict[name]['bandwidth']
+    Q_0 = data_dict[name]['Q_0']
+    Q_L = data_dict[name]['Q_L']
+    beta = data_dict[name]['beta']
+    z_coord = data_dict[name]['z_coord']
+
+    res_freq_centred_kHz = ((res_freq_GHz*1.e9)-design_freq_Hz)/1.e3
+
+    if '16' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_16_guard_present:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='x', s=cross_size, color=C16_APR23_colour)
+            else:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='x', s=cross_size, color=C16_APR23_colour, label='C16 guard present')
+                legend_done_16_guard_present = True
+        else:
+            if legend_done_16_guard_removed:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='o', s=circle_size, color=C16_APR23_colour)
+            else:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='o', s=circle_size, color=C16_APR23_colour, label='C16 guard removed')
+                legend_done_16_guard_removed = True
+
+    elif '20' in str(data_dict[name]['name']):
+        if data_dict[name]['stop_present?']:
+            if legend_done_20_guard_present:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='x', s=cross_size, color=C20_APR23_colour)
+            else:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='x', s=cross_size, color=C20_APR23_colour, label='C20 guard present')
+                legend_done_20_guard_present = True
+        else:
+            if legend_done_20_guard_removed:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='o', s=circle_size, color=C20_APR23_colour)
+            else:
+                plt.scatter(res_freq_centred_kHz, max_gamma_s21, marker='o', s=circle_size, color=C20_APR23_colour, label='C20 guard removed')
+                legend_done_20_guard_removed = True
+
+plt.xlabel(r'$\Delta$''f [kHz]')
+plt.ylabel('Max ''$\Gamma_{s21}$'' [dB]')
+plt.legend(loc='upper right')
+# plt.legend(loc=8)
+plt.savefig(f'{savepath}\\freq_centred_max_gamma_s21.png' ,bbox_inches='tight')
+plt.close('all')
 
 # max_gamma_s21
 legend_done_16_guard_present = False

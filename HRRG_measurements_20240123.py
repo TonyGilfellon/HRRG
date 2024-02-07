@@ -6,7 +6,6 @@ import pandas as pd
 from snps import SNPs
 pmm_addr = r'C:\Users\zup98752\PycharmProjects\PhD'
 sys.path.insert(1,pmm_addr)
-import PhD_Master_Module as pmm
 import HRRG_Master_Module as hmm
 import skrf as rf
 
@@ -201,9 +200,14 @@ temp_corrected_freq_list = [res_freq_list[i]+(delta_freq_per_degree_Hz*temp_delt
 # plt.scatter(res_freq_list[:-1], max_gamma_s21_list[:-1])
 # plt.scatter(temp_corrected_freq_list[:-1], max_gamma_s21_list[:-1], marker='x', s=80)
 
-plt.scatter(res_freq_list[:-1], max_gamma_raw_s21_list[:-1])
-plt.scatter(temp_corrected_freq_list[:-1], max_gamma_raw_s21_list[:-1], marker='x', s=80)
-plt.savefig(f'{savepath}\\freq_vs_max_s21.png')
+freqs_centred_kHz = [(i-design_freq_Hz)/1.e3 for i in res_freq_list[:-1]]
+freqs_GHz_for_plots = [i/1.e9 for i in res_freq_list[:-1]]
+# plt.scatter(freqs_centred_kHz, max_gamma_raw_s21_list[:-1], color = 'r')
+plt.scatter(freqs_centred_kHz, max_gamma_s21_list[:-1], color = 'r')
+# plt.scatter(freqs_GHz_for_plots, max_gamma_raw_s21_list[:-1], marker='x', s=80)
+plt.xlabel(r'$\Delta$''f [kHz]')
+plt.ylabel('$\Gamma_{MAX}$''[dB]')
+plt.savefig(f'{savepath}\\freq_centred_vs_max_s21_smoothed.png')
 plt.close('all')
 
 
@@ -220,34 +224,56 @@ plt.close('all')
 
 # beta & Q_0 histograms
 
-nbins = 5
+nbins = 4
 res_freq_list = res_freq_list[:-1]
 beta_list = beta_list[:-1]
 Q_0_list = Q_0_list[:-1]
 
-n, bedges, patches = plt.hist(res_freq_list, bins = nbins, histtype='step', lw=0.8, color='k')
-plt.vlines(np.mean(res_freq_list), 0., max(n), ls='--', lw=0.8, color='r')
-plt.text(min(res_freq_list), max(n), f'mean = {np.mean(res_freq_list):1.3f}')
-plt.xlabel(r'Frequency')
+res_freq_list_centred = [(i-design_freq_Hz)/1.e3 for i in res_freq_list]
+n, bedges, patches = plt.hist(res_freq_list_centred, bins = nbins, histtype='step', lw=0.8, color='r')
+plt.vlines(np.mean(res_freq_list_centred), 0., max(n), ls='--', lw=0.8, color='r')
+plt.text(min(res_freq_list_centred), max(n), f'mean = {np.mean(res_freq_list_centred):1.3f}\n'
+                                             f'SDev = {np.std(res_freq_list_centred):1.3f})')
+plt.xlabel(r'$\Delta$''f [kHz]')
 plt.ylabel('N')
 
 plt.savefig(f'{savepath}\\freq_histpng')
 plt.close('all')
 
-n, bedges, patches = plt.hist(beta_list, bins = nbins, histtype='step', lw=0.8, color='k')
+n, bedges, patches = plt.hist(beta_list, bins = nbins, histtype='step', lw=0.8, color='r')
 plt.vlines(np.mean(beta_list), 0., max(n), ls='--', lw=0.8, color='r')
-plt.text(min(bedges), max(n), f'mean = {np.mean(beta_list):1.3f}')
+plt.text(min(bedges), max(n), f'mean = {np.mean(beta_list):1.3f}\n'
+                                             f'SDev = {np.std(beta_list):1.3f})')
 plt.xlabel(r'$\beta$')
 plt.ylabel('N')
 
 plt.savefig(f'{savepath}\\Beta_histpng')
 plt.close('all')
 
-n, bins, patches = plt.hist(Q_0_list, bins = nbins, histtype='step', lw=0.8, color='k')
+n, bins, patches = plt.hist(Q_0_list, bins = nbins, histtype='step', lw=0.8, color='r')
 plt.vlines(np.mean(Q_0_list), 0., max(n), ls='--', lw=0.8, color='r')
-plt.text(min(bins), max(n), f'mean = {np.mean(Q_0_list):1.3f}')
+plt.text(min(bins), max(n), f'mean = {np.mean(Q_0_list):1.3f}\n'
+                                             f'SDev = {np.std(Q_0_list):1.3f})')
 plt.xlabel(r'$Q_0$')
 plt.ylabel('N')
 plt.savefig(f'{savepath}\\Q_0_hist.png')
 plt.close('all')
+
+n, bins, patches = plt.hist(max_gamma_s21_list, bins = nbins, histtype='step', lw=0.8, color='r')
+plt.vlines(np.mean(max_gamma_s21_list), 0., max(n), ls='--', lw=0.8, color='r')
+plt.text(min(bins), max(n), f'mean = {np.mean(max_gamma_s21_list):1.3f}\n'
+                                             f'SDev = {np.std(max_gamma_s21_list):1.3f})')
+plt.xlabel(r'$Q_0$')
+plt.ylabel('N')
+plt.savefig(f'{savepath}\\Q_0_hist.png')
+plt.close('all')
+
+print(f'Q_0 mean = {np.mean(Q_0_list):1.3f}\n'
+      f'Q_0 SDev = {np.std(Q_0_list):1.3f}')
+print(f'B mean = {np.mean(beta_list):1.3f}\n'
+      f'B SDev = {np.std(beta_list):1.3f}')
+print(f'max gamma mean = {np.mean(max_gamma_s21_list):1.3f}\n'
+      f'max gamma SDev = {np.std(max_gamma_s21_list):1.3f}')
+print(f'freq mean = {np.mean(res_freq_list):1.3f}\n'
+      f'freq SDev = {np.std(res_freq_list):1.3f}')
 

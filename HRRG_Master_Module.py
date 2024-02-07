@@ -6,6 +6,16 @@ sys.path.insert(1,pmm_addr)
 import PhD_Master_Module as pmm
 import skrf as rf
 
+f = 2998.538e6
+mu0 = 4. * np.pi * 1.e-7
+w = 2. * np.pi * f
+sigma = 5.8e7
+Rs = np.sqrt(w * mu0 / (2. * sigma))
+Q = 13199.
+G = Q * Rs
+print(f'{G = }')
+
+# exit()
 
 def get_FF_from_zcoord(zcoord):
     A_poly_hrrg = 8.725565888064103e-06
