@@ -45,10 +45,13 @@ freq_C16_APR23 = []
 max_gamma_C16_APR23 = []
 Q_0_C16_APR23 = []
 beta_C16_APR23 = []
+bandwidth_C16_APR23 = []
+
 freq_C20_APR23 = []
 max_gamma_C20_APR23 = []
 Q_0_C20_APR23 = []
 beta_C20_APR23 = []
+bandwidth_C20_APR23 = []
 print(f'\nAPR23 data')
 for key, val in data_dict_APR23.items():
     print(f'\n{key}')
@@ -66,6 +69,8 @@ for key, val in data_dict_APR23.items():
                 Q_0_C16_APR23.append(val_2)
             elif str(key_2) == "beta":
                 beta_C16_APR23.append(val_2)
+            elif str(key_2) == "bandwidth":
+                bandwidth_C16_APR23.append(val_2)
             else:
                 pass
 
@@ -78,6 +83,8 @@ for key, val in data_dict_APR23.items():
                 Q_0_C20_APR23.append(val_2)
             elif str(key_2) == "beta":
                 beta_C20_APR23.append(val_2)
+            elif str(key_2) == "bandwidth":
+                bandwidth_C20_APR23.append(val_2)
             else:
                 pass
             
@@ -87,6 +94,7 @@ freq_JAN24 = []
 max_gamma_JAN24 = []
 Q_0_JAN24 = []
 beta_JAN24 = []
+bandwidth_C8_JAN24 = []
 print(f'\nJAN24 data')
 for key, val in data_dict_JAN24.items():
     print(f'\n{key}')
@@ -104,6 +112,8 @@ for key, val in data_dict_JAN24.items():
             Q_0_JAN24.append(val_2)
         elif str(key_2) == "beta":
             beta_JAN24.append(val_2)
+        elif str(key_2) == "bandwidth":
+            bandwidth_C8_JAN24.append(val_2)
         else:
             pass
 
@@ -310,6 +320,16 @@ print(f'max gamma mean = {mean_max_gamma_JAN24:1.3f}\n'
 print(f'freq mean = {mean_freq_JAN24:1.3f}\n'
       f'freq SDev = {std_freq_JAN24:1.3f}')
 
+
+plt.scatter(Q_0_C16_APR23, max_gamma_C16_APR23, color=C16_APR23_colour, label="C16  APR23")
+plt.scatter(Q_0_C20_APR23, max_gamma_C20_APR23, color=C20_APR23_colour, label="C20  APR23")
+plt.scatter(Q_0_JAN24, max_gamma_JAN24, color=C8_JAN24_colour, label="C8    JAN24")
+plt.xlabel(r'$Q_0$')
+plt.ylabel('Max 'r'$\Gamma_{S21}$'' [dB]')
+plt.legend(loc='lower right')
+plt.savefig(f'{savepath_COMP}\\Q0_maxGamma_all.png')
+plt.close('all')
+
 # combined 23 24 histograms
 
 
@@ -383,4 +403,59 @@ plt.text(-0.1, 3., f's. dev. C16 APR23 = {std_C16_APR23:1.3f} [dB]\n'
 plt.xlabel(r'$\Delta$'r'Max 'r'$\Gamma_{S21}$')
 plt.ylabel('N')
 plt.savefig(f'{savepath_COMP}\\max_gamma_C8_C16_C20_centred_hist.png')
+plt.close('all')
+
+
+# noise on power
+
+temp_operational_C = 50.
+temp_operational_K = 273.15 + temp_operational_C
+temp_experiment_C = 20.8
+temp_experiment_K = 273.15 + temp_experiment_C
+
+# C16_APR23
+
+power_noise_C16_APR23 = [hmm.get_noise_power(temp_experiment_K, bandwidth_C16_APR23[i]) for i in range(len(bandwidth_C16_APR23))]
+P_out_C16_APR23 = [hmm.get_P_out_from_dB_and_P_in(max_gamma_C16_APR23[i], 10.e-2) for i in range(len(max_gamma_C16_APR23))]
+
+print(f'\nC16_APR23\nBandwidths [Hz]          P_out [W]                    P_noise [W]')
+for i in range(len(bandwidth_C16_APR23)):
+    print(f'{bandwidth_C16_APR23[i]}        {P_out_C16_APR23[i]}       {power_noise_C16_APR23[i]}')
+
+n, bedges, patches = plt.hist(power_noise_C16_APR23, bins = nbins, histtype='step', lw=0.8, color=C16_APR23_colour)
+
+plt.xlabel(r'$P_{noise}$')
+plt.ylabel('N')
+plt.savefig(f'{savepath_COMP}\\P_noise_hist.png')
+plt.close('all')
+
+n, bedges, patches = plt.hist(P_out_C16_APR23, bins = nbins, histtype='step', lw=0.8, color=C16_APR23_colour)
+plt.xlabel(r'$P_{out}$')
+plt.ylabel('N')
+plt.savefig(f'{savepath_COMP}\\P_out_hist.png')
+plt.close('all')
+
+
+# C8_JAN24
+
+bandwidth_C8_JAN24 = bandwidth_C8_JAN24[:-1]  #  remove cathode out outlier
+
+power_noise_C8_JAN24 = [hmm.get_noise_power(temp_operational_K, bandwidth_C8_JAN24[i]) for i in range(len(bandwidth_C8_JAN24))]
+P_out_C8_JAN24 = [hmm.get_P_out_from_dB_and_P_in(max_gamma_JAN24[i], 10.e-2) for i in range(len(max_gamma_JAN24))]
+
+print(f'\nC8_JAN24\nBandwidths [Hz]          P_out [W]                    P_noise [W]')
+for i in range(len(bandwidth_C8_JAN24)):
+    print(f'{bandwidth_C8_JAN24[i]}        {P_out_C8_JAN24[i]}       {power_noise_C8_JAN24[i]}')
+
+n, bedges, patches = plt.hist(power_noise_C8_JAN24, bins = nbins, histtype='step', lw=0.8, color=C8_JAN24_colour)
+
+plt.xlabel(r'$P_{noise}$')
+plt.ylabel('N')
+plt.savefig(f'{savepath_COMP}\\P_noise_hist.png')
+plt.close('all')
+
+n, bedges, patches = plt.hist(P_out_C8_JAN24, bins = nbins, histtype='step', lw=0.8, color=C8_JAN24_colour)
+plt.xlabel(r'$P_{out}$')
+plt.ylabel('N')
+plt.savefig(f'{savepath_COMP}\\P_out_C8_JAN24_hist.png')
 plt.close('all')

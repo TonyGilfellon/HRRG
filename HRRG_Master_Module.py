@@ -214,6 +214,10 @@ def is_overcoupled(s11, s11_ph, name, print_plot=False):
         plt.scatter(re_s11, im_s11, marker='o', s=5, color='k')
         plt.show()
 
+    if len(quadrant_1) > 0 and len(quadrant_2) > 0 and len(quadrant_3) > 0 and len(quadrant_4) > 0:
+        return True
+    else:
+        return False
 
 def get_snp_freq(snp):
     res_freq = snp.frequency.f[np.argmin(snp.s_mag[:, 0, 0])]
@@ -348,3 +352,31 @@ def get_delta_Db_from_MCR_data(savepath):
 
     return abs(average_delta_Db)
 
+def get_noise_power(temp_K, bandwidth):
+    """
+    based on eqn 10.3, page 499
+    Pozar_Microwave Engineering(2012)
+    :param temp_K:
+    :param bandwidth:
+    :return:
+    """
+    T = temp_K
+    B = bandwidth
+    k = 1.380649e-23  # Boltzman
+
+    P_n = k*T*B
+
+    return P_n
+
+def get_P_out_from_dB_and_P_in(dB, P_in):
+    """
+
+    :param dB:
+    :param P_in:
+    :return:
+    """
+    dB = float(dB)
+    P_in = float(P_in)
+    P_out = (10.**(dB/10.)) * P_in
+
+    return P_out
